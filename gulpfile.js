@@ -28,7 +28,7 @@ var interceptErrors = function(error) {
 };
 
 
-gulp.task('browserify', gulp.series(['views'], function() {
+gulp.task('browserify', gulp.series('views', function() {
   return browserify('./src/js/app.js')
       .transform(babelify, {presets: ["es2015"]})
       .transform(ngAnnotate)
