@@ -27,8 +27,18 @@ var interceptErrors = function(error) {
   this.emit('end');
 };
 
+gulp.task('views', gulp.series(function() {
+  return gulp.src(viewFiles)
+      .pipe(templateCache({
+        standalone: true
+      }))
+      .on('error', interceptErrors)
+      .pipe(rename("app.templates.js"))
+      .pipe(gulp.dest('./src/js/config/'));
+}));
 
-gulp.task('browserify', gulp.series('views', function() {
+
+gulp.task('browserify', gulp.parallel('views', function() {
   return browserify('./src/js/app.js')
       .transform(babelify, {presets: ["es2015"]})
       .transform(ngAnnotate)
@@ -44,16 +54,6 @@ gulp.task('html', gulp.series(function() {
   return gulp.src("src/index.html")
       .on('error', interceptErrors)
       .pipe(gulp.dest('./build/'));
-}));
-
-gulp.task('views', gulp.series(function() {
-  return gulp.src(viewFiles)
-      .pipe(templateCache({
-        standalone: true
-      }))
-      .on('error', interceptErrors)
-      .pipe(rename("app.templates.js"))
-      .pipe(gulp.dest('./src/js/config/'));
 }));
 
 // This task is used for building production ready
@@ -80,7 +80,7 @@ gulp.task('default', gulp.series(['html', 'browserify'], function() {
     }
   });
 
-  gulp.watch("src/index.html", ['html']);
-  gulp.watch(viewFiles, ['views']);
-  gulp.watch(jsFiles, ['browserify']);
+  gulp.watch("src/index.html", gulp.series('html'));
+  gulp.watch(viewFiles, gulp.series('views'));
+  gulp.watch(jsFiles, gulp.series('browserify'));
 }));
